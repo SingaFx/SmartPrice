@@ -1,6 +1,6 @@
 {
   "name": "SmartPrice",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Smart Contract aggregate pricing from exchanges",
   "main": "main.js",
   "scripts": {
@@ -10,7 +10,6 @@
   "author": "SmartConEx",
   "license": "ISC",
   "dependencies": {
-    "request": "^2.83.0",
-    "request-promise": "^4.2.2"
+    "ccxt": "^1.10.579"
   }
 }

@@ -1,148 +1,59 @@
-const rp = require("request-promise");
+const ccxt = require("ccxt");
 
-/*
-    { high: '709.31',
-      last: '696.01',
-      timestamp: '1514702383',
-      bid: '696.00',
-      vwap: '700.56',
-      volume: '701.00209298',
-      low: '696.01',
-      ask: '697.33',
-      open: '697.03' }
-*/
-const bitStampUrl = "https://www.bitstamp.net/api/v2/ticker_hour/ethusd/";
-
-/*
-    a = ask array(<price>, <whole lot volume>, <lot volume>),
-    b = bid array(<price>, <whole lot volume>, <lot volume>),
-    c = last trade closed array(<price>, <lot volume>),
-    v = volume array(<today>, <last 24 hours>),
-    p = volume weighted average price array(<today>, <last 24 hours>),
-    t = number of trades array(<today>, <last 24 hours>),
-    l = low array(<today>, <last 24 hours>),
-    h = high array(<today>, <last 24 hours>),
-    o = today's opening price
-*/
-const krakenUrl = "https://api.kraken.com/0/public/Ticker?pair=ETHUSD";
-
-/*
-    { mid: '692.9',
-      bid: '692.87',
-      ask: '692.93',
-      last_price: '693.21',
-      low: '640.43',
-      high: '702.99',
-      volume: '227910.27266435',
-      timestamp: '1514704295.415888' }
-*/
-const bitfinexUrl = "https://api.bitfinex.com/v1/pubticker/ethusd";
-
-/*
-    { data: { base: 'ETH', currency: 'USD', amount: '706.01' } }
-*/
-const coinbaseUrl = "https://api.coinbase.com/v2/prices/ETH-USD/spot";
-
-/*
-    {"bid":"702.63","ask":"702.64","volume":{"ETH":"37693.76042157","USD":"26668896.1640428922","timestamp":1514706600000},"last":"702.63"}
-*/
-const geminiUrl = "https://api.gemini.com/v1/pubticker/ethusd";
-
-/*
-    {"ask":"728.87","bid":"727.66","last":"728.61","open":"689.75","low":"681.69","high":"744.00","volume":"12579.350","volumeQuote":"8965307.97029","timestamp":"2018-01-01T00:29:46.564Z","symbol":"ETHUSD"}
-*/
-const hitbtcUrl = "https://api.hitbtc.com/api/2/public/ticker/ETHUSD";
+var kraken = new ccxt.kraken();
+var bitstamp = new ccxt.bitstamp();
+var bitfinex = new ccxt.bitfinex();
+var gemini = new ccxt.gemini();
 
 var thisPriceObj = {};
 
-var rpPromise = rp({
-    uri: bitStampUrl,
-    simple: false
-  })
-  .then((htmlString) => {
-    try {
-      let json = JSON.parse(htmlString);
-      if (!isNaN(parseFloat(json.last))) {
-        thisPriceObj['bitStampPrice'] = parseFloat(json.last);
-      }
-    } catch (ex) {
-      // swallow exception
+// courtesy of MDN
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round
+function precisionRound(number, precision) {
+  var factor = Math.pow(10, precision);
+  return Math.round(number * factor) / factor;
+}
+
+var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
+  .then(result => {
+    if (result.average != undefined) {
+      thisPriceObj.bitStampPrice = result.average;
     }
-    return rp({
-      uri: krakenUrl,
-      simple: false
-    });
-  })
-  .then((htmlString) => {
-    try {
-      let json = JSON.parse(htmlString);
-      if (!isNaN(parseFloat(json.result.XETHZUSD.c[0]))) {
-        thisPriceObj['krakenPrice'] = parseFloat(json.result.XETHZUSD.c[0]);
-      }
-    } catch (ex) {
-      // swallow exception
+    else if (result.last != undefined) {
+      thisPriceObj.bitStampPrice = result.last;
     }
-    return rp({
-      uri: bitfinexUrl,
-      simple: false
-    });
+    return kraken.fetchTicker('ETH/USD');
   })
-  .then((htmlString) => {
-    try {
-      let json = JSON.parse(htmlString);
-      if (!isNaN(parseFloat(json.last_price))) {
-        thisPriceObj['bitfinexPrice'] = parseFloat(json.last_price);
-      }
-    } catch (ex) {
-      // swallow exception
+  .then(result => {
+    if (result.average != undefined) {
+      thisPriceObj.kraken = result.average;
     }
-    return rp({
-      uri: coinbaseUrl,
-      simple: false
-    });
-  })
-  .then((htmlString) => {
-    try {
-      let json = JSON.parse(htmlString);
-      if (!isNaN(parseFloat(json.data.amount))) {
-        thisPriceObj['coinbasePrice'] = parseFloat(json.data.amount);
-      }
-    } catch (ex) {
-      // swallow exception
+    else if (result.last != undefined) {
+      thisPriceObj.kraken = result.last;
     }
-    return rp({
-      uri: geminiUrl,
-      simple: false
-    });
+    return bitfinex.fetchTicker('ETH/USD');
   })
-  .then((htmlString) => {
-    try {
-      let json = JSON.parse(htmlString);
-      if (!isNaN(parseFloat(json.last))) {
-        thisPriceObj['geminiPrice'] = parseFloat(json.last);
-      }
-    } catch (ex) {
-      // swallow exception
+  .then(result => {
+    if (result.average != undefined) {
+      thisPriceObj.bitfinex = result.average;
     }
-    return rp({
-      uri: hitbtcUrl,
-      simple: false
-    });
+    else if (result.last != undefined) {
+      thisPriceObj.bitfinex = result.last;
+    }
+    return gemini.fetchTicker('ETH/USD');
   })
-  .then((htmlString) => {
-    try {
-      let json = JSON.parse(htmlString);
-      if (!isNaN(parseFloat(json.last))) {
-        thisPriceObj['hitbtcPrice'] = parseFloat(json.last);
-      }
-    } catch (ex) {
-      // swallow exception
+  .then(result => {
+    if (result.average != undefined) {
+      thisPriceObj.gemini = result.average;
+    }
+    else if (result.last != undefined) {
+      thisPriceObj.gemini = result.last;
     }
   })
   .catch((err) => {
-    console.log('Error occurred: ' + err);
+    console.log(err);
   })
-  .finally(() => {
+  .then(() => {
     var totalPrice = 0.0;
     var rejects = 0;
 
@@ -155,12 +66,12 @@ var rpPromise = rp({
       }
     }
 
-    thisPriceObj['totalPrice'] = (totalPrice / (Object.keys(thisPriceObj).length - rejects)).toFixed(2);
+    thisPriceObj['avgPrice'] = precisionRound((totalPrice / (Object.keys(thisPriceObj).length - rejects)), 2);
   });
 
 var thisPromise = new Promise((resolve, reject) => {
   thisPriceObj = {};
-  resolve(rpPromise);
+  resolve(ccxtPromise);
 })
 
 module.exports.priceObj = thisPriceObj;
