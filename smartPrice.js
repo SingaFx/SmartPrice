@@ -19,8 +19,8 @@ var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
     if (result.average != undefined) {
       thisPriceObj.bitStampPrice = result.average;
     }
-    else if (result.last != undefined) {
-      thisPriceObj.bitStampPrice = result.last;
+    else if (result.ask &&  result.bid) {
+      thisPriceObj.bitStampPrice = (result.ask + result.bid) / 2;
     }
     return kraken.fetchTicker('ETH/USD');
   })
@@ -28,8 +28,8 @@ var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
     if (result.average != undefined) {
       thisPriceObj.kraken = result.average;
     }
-    else if (result.last != undefined) {
-      thisPriceObj.kraken = result.last;
+    else if (result.ask &&  result.bid) {
+      thisPriceObj.kraken = (result.ask + result.bid) / 2;
     }
     return bitfinex.fetchTicker('ETH/USD');
   })
@@ -37,8 +37,8 @@ var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
     if (result.average != undefined) {
       thisPriceObj.bitfinex = result.average;
     }
-    else if (result.last != undefined) {
-      thisPriceObj.bitfinex = result.last;
+    else if (result.ask &&  result.bid) {
+      thisPriceObj.bitfinex = (result.ask + result.bid) / 2;
     }
     return gemini.fetchTicker('ETH/USD');
   })
@@ -46,8 +46,8 @@ var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
     if (result.average != undefined) {
       thisPriceObj.gemini = result.average;
     }
-    else if (result.last != undefined) {
-      thisPriceObj.gemini = result.last;
+    else if (result.ask &&  result.bid) {
+      thisPriceObj.gemini = (result.ask + result.bid) / 2;
     }
   })
   .catch((err) => {
