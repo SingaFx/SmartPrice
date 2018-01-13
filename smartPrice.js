@@ -14,41 +14,41 @@ function precisionRound(number, precision) {
   return Math.round(number * factor) / factor;
 }
 
+function setPriceObj(result, property) {
+  if (result.average != undefined) {
+    thisPriceObj[property] = result.average;
+  } else if (result.ask && result.bid) {
+    thisPriceObj[property] = (result.ask + result.bid) / 2;
+  }
+}
+
 var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
   .then(result => {
-    if (result.average != undefined) {
-      thisPriceObj.bitStampPrice = result.average;
-    }
-    else if (result.ask &&  result.bid) {
-      thisPriceObj.bitStampPrice = (result.ask + result.bid) / 2;
-    }
+    setPriceObj(result, 'bitstamp');
+    return kraken.fetchTicker('ETH/USD');
+  })
+  .catch((err) => {
+    console.log(err);
     return kraken.fetchTicker('ETH/USD');
   })
   .then(result => {
-    if (result.average != undefined) {
-      thisPriceObj.kraken = result.average;
-    }
-    else if (result.ask &&  result.bid) {
-      thisPriceObj.kraken = (result.ask + result.bid) / 2;
-    }
+    setPriceObj(result, 'kraken');
+    return bitfinex.fetchTicker('ETH/USD');
+  })
+  .catch((err) => {
+    console.log(err);
     return bitfinex.fetchTicker('ETH/USD');
   })
   .then(result => {
-    if (result.average != undefined) {
-      thisPriceObj.bitfinex = result.average;
-    }
-    else if (result.ask &&  result.bid) {
-      thisPriceObj.bitfinex = (result.ask + result.bid) / 2;
-    }
+    setPriceObj(result, 'bitfinex');
+    return gemini.fetchTicker('ETH/USD');
+  })
+  .catch((err) => {
+    console.log(err);
     return gemini.fetchTicker('ETH/USD');
   })
   .then(result => {
-    if (result.average != undefined) {
-      thisPriceObj.gemini = result.average;
-    }
-    else if (result.ask &&  result.bid) {
-      thisPriceObj.gemini = (result.ask + result.bid) / 2;
-    }
+    setPriceObj(result, 'gemini');
   })
   .catch((err) => {
     console.log(err);
@@ -60,8 +60,7 @@ var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
     for (const obj in thisPriceObj) {
       if (!isNaN(thisPriceObj[obj])) {
         totalPrice += thisPriceObj[obj];
-      }
-      else {
+      } else {
         rejects++;
       }
     }
