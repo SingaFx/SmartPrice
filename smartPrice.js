@@ -3,6 +3,7 @@ const ccxt = require("ccxt");
 var kraken = new ccxt.kraken();
 var bitstamp = new ccxt.bitstamp();
 var bitfinex = new ccxt.bitfinex();
+var gdax = new ccxt.gdax();
 var gemini = new ccxt.gemini();
 
 var thisPriceObj = {};
@@ -22,57 +23,66 @@ function setPriceObj(result, property) {
   }
 }
 
-var ccxtPromise = bitstamp.fetchTicker('ETH/USD')
-  .then(result => {
-    setPriceObj(result, 'bitstamp');
-    return kraken.fetchTicker('ETH/USD');
-  })
-  .catch((err) => {
-    console.log(err);
-    return kraken.fetchTicker('ETH/USD');
-  })
-  .then(result => {
-    setPriceObj(result, 'kraken');
-    return bitfinex.fetchTicker('ETH/USD');
-  })
-  .catch((err) => {
-    console.log(err);
-    return bitfinex.fetchTicker('ETH/USD');
-  })
-  .then(result => {
-    setPriceObj(result, 'bitfinex');
-    return gemini.fetchTicker('ETH/USD');
-  })
-  .catch((err) => {
-    console.log(err);
-    return gemini.fetchTicker('ETH/USD');
-  })
-  .then(result => {
-    setPriceObj(result, 'gemini');
-  })
-  .catch((err) => {
-    console.log(err);
-  })
-  .then(() => {
-    var totalPrice = 0.0;
-    var rejects = 0;
+function updatePrice() {
+  return new Promise((resolve, reject) => {
+    thisPriceObj = {};
+    resolve(bitstamp.fetchTicker('ETH/USD')
+    .then(result => {
+      setPriceObj(result, 'bitstamp');
+      return kraken.fetchTicker('ETH/USD');
+    })
+    .catch((err) => {
+      console.log(err);
+      return kraken.fetchTicker('ETH/USD');
+    })
+    .then(result => {
+      setPriceObj(result, 'kraken');
+      return bitfinex.fetchTicker('ETH/USD');
+    })
+    .catch((err) => {
+      console.log(err);
+      return bitfinex.fetchTicker('ETH/USD');
+    })
+    .then(result => {
+      setPriceObj(result, 'bitfinex');
+      return gdax.fetchTicker('ETH/USD');
+    })
+    .catch((err) => {
+      console.log(err);
+      return gdax.fetchTicker('ETH/USD');
+    })
+    .then(result => {
+      setPriceObj(result, 'gdax');
+      return gemini.fetchTicker('ETH/USD');
+    })
+    .catch((err) => {
+      console.log(err);
+      return gemini.fetchTicker('ETH/USD');
+    })
+    .then(result => {
+      setPriceObj(result, 'gemini');
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+    .then(() => {
+      var totalPrice = 0.0;
+      var rejects = 0;
 
-    for (const obj in thisPriceObj) {
-      if (!isNaN(thisPriceObj[obj])) {
-        totalPrice += thisPriceObj[obj];
-      } else {
-        rejects++;
+      for (const obj in thisPriceObj) {
+        if (!isNaN(thisPriceObj[obj])) {
+          totalPrice += thisPriceObj[obj];
+        } else {
+          rejects++;
+        }
       }
-    }
 
-    thisPriceObj['avgPrice'] = precisionRound((totalPrice / (Object.keys(thisPriceObj).length - rejects)), 2);
+      thisPriceObj['avgPrice'] = precisionRound((totalPrice / (Object.keys(thisPriceObj).length - rejects)), 2);
+      return thisPriceObj;
+    }));
   });
-
-var thisPromise = new Promise((resolve, reject) => {
-  thisPriceObj = {};
-  resolve(ccxtPromise);
-})
+}
 
 module.exports.priceObj = thisPriceObj;
 
-module.exports.updatePrice = thisPromise;
+module.exports.updatePrice = updatePrice;
