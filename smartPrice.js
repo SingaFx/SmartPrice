@@ -2,7 +2,6 @@ const ccxt = require("ccxt");
 
 var kraken = new ccxt.kraken();
 var bitstamp = new ccxt.bitstamp();
-var bitfinex = new ccxt.bitfinex();
 var gdax = new ccxt.gdax();
 var gemini = new ccxt.gemini();
 
@@ -37,14 +36,6 @@ function updatePrice() {
     })
     .then(result => {
       setPriceObj(result, 'kraken');
-      return bitfinex.fetchTicker('ETH/USD');
-    })
-    .catch((err) => {
-      console.log(err);
-      return bitfinex.fetchTicker('ETH/USD');
-    })
-    .then(result => {
-      setPriceObj(result, 'bitfinex');
       return gdax.fetchTicker('ETH/USD');
     })
     .catch((err) => {
