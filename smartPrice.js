@@ -84,16 +84,19 @@ function updatePrice(pair, excludedExchanges) {
 
       try {
         if (Object.keys(thisPriceObj[pair[0]]).length > 0) {
-          for (const obj in thisPriceObj[pair[0]]) {
-            if (!isNaN(thisPriceObj[pair[0]][obj])) {
-              totalPrice += thisPriceObj[pair[0]][obj];
-            } else {
-              rejects++;
+          while ((thisPriceObj[pair[0]].avgPrice == null) || (thisPriceObj[pair[0]].avgPrice == undefined)) {
+            for (const obj in thisPriceObj[pair[0]]) {
+              if (!isNaN(thisPriceObj[pair[0]][obj])) {
+                totalPrice += thisPriceObj[pair[0]][obj];
+              } else {
+                rejects++;
+              }
             }
-          }
 
-          thisPriceObj[pair[0]].avgPrice = precisionRound((totalPrice / (Object.keys(thisPriceObj[pair[0]]).length - rejects)), 2);
-          thisPriceObj[pair[0]].date = new Date();
+
+            thisPriceObj[pair[0]].avgPrice = precisionRound((totalPrice / (Object.keys(thisPriceObj[pair[0]]).length - rejects)), 2);
+            thisPriceObj[pair[0]].date = new Date();
+          }
         }
         else {
           delete thisPriceObj[pair[0]];
