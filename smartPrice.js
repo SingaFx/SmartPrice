@@ -4,6 +4,7 @@ var kraken = new ccxt.kraken();
 var bitstamp = new ccxt.bitstamp();
 var gdax = new ccxt.gdax();
 var gemini = new ccxt.gemini();
+var bitfinex = new ccxt.bitfinex();
 
 var thisPriceObj = {};
 
@@ -14,62 +15,101 @@ function precisionRound(number, precision) {
   return Math.round(number * factor) / factor;
 }
 
-function setPriceObj(result, property) {
+function setPriceObj(result, pair, exchange) {
   if (result.average != undefined) {
-    thisPriceObj[property] = result.average;
+    thisPriceObj[pair][exchange] = result.average;
   } else if (result.ask && result.bid) {
-    thisPriceObj[property] = (result.ask + result.bid) / 2;
+    thisPriceObj[pair][exchange] = (result.ask + result.bid) / 2;
   }
 }
 
-function updatePrice() {
+/**
+ * Update given pair(s) of currencies, while excluding certain exchanges
+ *
+ * @param {any} pair - array of pair(s) of currencies to looks up. e.g: ['ETH/USD']. ['ETH/USD', 'BTC/USD']
+ * @param {any} excludedExchanges - optional array of exchanges to exclude in pricing, by name. e.g: ['bitfinex']. ['bitfinex', 'kraken']
+ * @returns priceObj
+ */
+function updatePrice(pair, excludedExchanges) {
   return new Promise((resolve, reject) => {
-    thisPriceObj = {};
-    resolve(bitstamp.fetchTicker('ETH/USD')
+    thisPriceObj[pair[0]] = {};
+    resolve(bitstamp.fetchTicker(pair[0])
     .then(result => {
-      setPriceObj(result, 'bitstamp');
-      return kraken.fetchTicker('ETH/USD');
+      if ((excludedExchanges == null) || (excludedExchanges.indexOf('bitstamp') == -1)) {
+        setPriceObj(result, pair[0], 'bitstamp');
+      }
+      return kraken.fetchTicker(pair[0]);
     })
     .catch((err) => {
-      console.log(err);
-      return kraken.fetchTicker('ETH/USD');
+      return kraken.fetchTicker(pair[0]);
     })
     .then(result => {
-      setPriceObj(result, 'kraken');
-      return gdax.fetchTicker('ETH/USD');
+      if ((excludedExchanges == null) || (excludedExchanges.indexOf('kraken') == -1)) {
+        setPriceObj(result, pair[0], 'kraken');
+      }
+      return gdax.fetchTicker(pair[0]);
     })
     .catch((err) => {
-      console.log(err);
-      return gdax.fetchTicker('ETH/USD');
+      return gdax.fetchTicker(pair[0]);
     })
     .then(result => {
-      setPriceObj(result, 'gdax');
-      return gemini.fetchTicker('ETH/USD');
+      if ((excludedExchanges == null) || (excludedExchanges.indexOf('gdax') == -1)) {
+        setPriceObj(result, pair[0], 'gdax');
+      }
+      return gemini.fetchTicker(pair[0]);
     })
     .catch((err) => {
-      console.log(err);
-      return gemini.fetchTicker('ETH/USD');
+      return gemini.fetchTicker(pair[0]);
     })
     .then(result => {
-      setPriceObj(result, 'gemini');
+      if ((excludedExchanges == null) || (excludedExchanges.indexOf('gemini') == -1)) {
+        setPriceObj(result, pair[0], 'gemini');
+      }
+      return bitfinex.fetchTicker(pair[0]);
     })
     .catch((err) => {
-      console.log(err);
+      return bitfinex.fetchTicker(pair[0]);
+    })
+    .then(result => {
+      if ((excludedExchanges == null) || (excludedExchanges.indexOf('bitfinex') == -1)) {
+        setPriceObj(result, pair[0], 'bitfinex');
+      }
+    })
+    .catch(() => {
+      // swallow exception
     })
     .then(() => {
       var totalPrice = 0.0;
       var rejects = 0;
 
-      for (const obj in thisPriceObj) {
-        if (!isNaN(thisPriceObj[obj])) {
-          totalPrice += thisPriceObj[obj];
-        } else {
-          rejects++;
+      try {
+        if (Object.keys(thisPriceObj[pair[0]]).length > 0) {
+          for (const obj in thisPriceObj[pair[0]]) {
+            if (!isNaN(thisPriceObj[pair[0]][obj])) {
+              totalPrice += thisPriceObj[pair[0]][obj];
+            } else {
+              rejects++;
+            }
+          }
+
+          thisPriceObj[pair[0]].avgPrice = precisionRound((totalPrice / (Object.keys(thisPriceObj[pair[0]]).length - rejects)), 2);
+          thisPriceObj[pair[0]].date = new Date();
+        }
+        else {
+          delete thisPriceObj[pair[0]];
         }
       }
+      catch (err) {
+        // swallow exception
+      }
 
-      thisPriceObj['avgPrice'] = precisionRound((totalPrice / (Object.keys(thisPriceObj).length - rejects)), 2);
-      return thisPriceObj;
+      if (pair.length > 1) {
+        pair.splice(0,1);
+        return updatePrice(pair, excludedExchanges);
+      }
+      else {
+        return thisPriceObj;
+      }
     }));
   });
 }
