@@ -6,16 +6,16 @@ Uses the [CCXT](https://github.com/ccxt/ccxt) library to simplify API calls. Use
 
 # Installation/Usage
 
-Clone the repo, `cd` in the directory, then run:
+smartprice can be cloned and ran from the source, or can be installed as an npm module. We describe the npm installation/usage below. First, install the package in your working directory like so:
 
 ```
-npm install
+npm install smartprice --save
 ```
 
-Require or import SmartPrice into your project. There is currently only one method and one property right now. Typical usage would be to call the `updatePrice` function, which takes two parameters and returns an ES6 Promise. The two parameters are an array of currency pairs to update, and an optional array of exchanges to exclude. Ex:
+Require and use smartprice in your project. There is currently only one method and one property right now. Typical usage would be to call the `updatePrice` function, which takes two parameters and returns an ES6 Promise. The two parameters are an array of currency pairs to update, and an optional array of exchanges to exclude. Ex:
 
 ```javascript
-const sp = require('<GIT REPO>/smartPrice');
+const sp = require('smartprice');
 
 // update the price of ETH/USD crypto pair, and exclude the 'kraken' exchange from pricing
 sp.updatePrice(['ETH/USD'], ['kraken']).then(result => {
