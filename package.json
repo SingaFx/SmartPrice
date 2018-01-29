@@ -1,6 +1,6 @@
 {
   "name": "smartprice",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Aggregate cryptocurrency pricing using CCXT library and various exchanges",
   "main": "index.js",
   "scripts": {
@@ -8,8 +8,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "smartprice", "cryptocurrency", "ethereum", "smartconex", "smart price", "aggregate",
-    "pricing", "crypto", "bitcoin", "price", "average"
+    "smartprice",
+    "cryptocurrency",
+    "ethereum",
+    "smartconex",
+    "smart price",
+    "aggregate",
+    "pricing",
+    "crypto",
+    "bitcoin",
+    "price",
+    "average"
   ],
   "repository": {
     "type": "git",
