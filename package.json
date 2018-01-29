@@ -1,10 +1,10 @@
 {
   "name": "SmartPrice",
   "version": "1.0.1",
-  "description": "Smart Contract aggregate pricing from exchanges",
-  "main": "main.js",
+  "description": "Aggregate cryptocurrency pricing using CCXT library and various exchanges",
+  "main": "index.js",
   "scripts": {
-    "start": "node main.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "SmartConEx",
