@@ -7,6 +7,10 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "smartprice", "cryptocurrency", "ethereum", "smartconex", "smart price", "aggregate",
+    "pricing", "crypto", "bitcoin", "price", "average"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/smartconex/SmartPrice.git"
