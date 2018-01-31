@@ -1,17 +1,17 @@
 const ccxt = require("ccxt");
 
-var kraken = new ccxt.kraken();
-var bitstamp = new ccxt.bitstamp();
-var gdax = new ccxt.gdax();
-var gemini = new ccxt.gemini();
-var bitfinex = new ccxt.bitfinex();
+let kraken = new ccxt.kraken();
+let bitstamp = new ccxt.bitstamp();
+let gdax = new ccxt.gdax();
+let gemini = new ccxt.gemini();
+let bitfinex = new ccxt.bitfinex();
 
-var thisPriceObj = {};
+let thisPriceObj = {};
 
 // courtesy of MDN
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round
 function precisionRound(number, precision) {
-  var factor = Math.pow(10, precision);
+  let factor = Math.pow(10, precision);
   return Math.round(number * factor) / factor;
 }
 
@@ -23,6 +23,7 @@ function setPriceObj(result, pair, exchange) {
   }
 }
 
+
 /**
  * Update given pair(s) of currencies, while excluding certain exchanges
  *
@@ -31,92 +32,101 @@ function setPriceObj(result, pair, exchange) {
  * @returns priceObj
  */
 function updatePrice(pair, excludedExchanges) {
+
   return new Promise((resolve, reject) => {
+    let hashTable = {};
+    excludedExchanges.forEach(e => {
+      hashTable[e] = true;
+    });
+
+    function setPriceObjExchange(result, exchange) {
+      if (excludedExchanges == null && hashTable[exchange]) {
+        setPriceObj(result, pair[0], exchange);
+      }
+    }
+
     thisPriceObj[pair[0]] = {};
-    resolve(bitstamp.fetchTicker(pair[0])
-    .then(result => {
-      if ((excludedExchanges == null) || (excludedExchanges.indexOf('bitstamp') == -1)) {
-        setPriceObj(result, pair[0], 'bitstamp');
-      }
-      return kraken.fetchTicker(pair[0]);
-    })
-    .catch((err) => {
-      return kraken.fetchTicker(pair[0]);
-    })
-    .then(result => {
-      if ((excludedExchanges == null) || (excludedExchanges.indexOf('kraken') == -1)) {
-        setPriceObj(result, pair[0], 'kraken');
-      }
-      return gdax.fetchTicker(pair[0]);
-    })
-    .catch((err) => {
-      return gdax.fetchTicker(pair[0]);
-    })
-    .then(result => {
-      if ((excludedExchanges == null) || (excludedExchanges.indexOf('gdax') == -1)) {
-        setPriceObj(result, pair[0], 'gdax');
-      }
-      return gemini.fetchTicker(pair[0]);
-    })
-    .catch((err) => {
-      return gemini.fetchTicker(pair[0]);
-    })
-    .then(result => {
-      if ((excludedExchanges == null) || (excludedExchanges.indexOf('gemini') == -1)) {
-        setPriceObj(result, pair[0], 'gemini');
-      }
-      return bitfinex.fetchTicker(pair[0]);
-    })
-    .catch((err) => {
-      return bitfinex.fetchTicker(pair[0]);
-    })
-    .then(result => {
-      if ((excludedExchanges == null) || (excludedExchanges.indexOf('bitfinex') == -1)) {
-        setPriceObj(result, pair[0], 'bitfinex');
-      }
-    })
-    .catch(() => {
-      // swallow exception
-    })
-    .then(() => {
-      var totalPrice = 0.0;
-      var rejects = 0;
+
+    let promises = [
+      bitstamp.fetchTicker(pair[0])
+      .then(result => {
+        setPriceObjExchange(result, 'bitstamp');
+        return kraken.fetchTicker(pair[0]);
+      })
+      .catch((err) => {
+        return kraken.fetchTicker(pair[0]);
+      }),
+      bitstamp.fetchTicker(pair[0]).then(result => {
+        setPriceObjExchange(result, 'kraken');
+        return gdax.fetchTicker(pair[0]);
+      })
+      .catch((err) => {
+        return gdax.fetchTicker(pair[0]);
+      }),
+      bitstamp.fetchTicker(pair[0]).then(result => {
+        setPriceObjExchange(result, 'gdax');
+        return gemini.fetchTicker(pair[0]);
+      })
+      .catch((err) => {
+        return gemini.fetchTicker(pair[0]);
+      }),
+      bitstamp.fetchTicker(pair[0]).then(result => {
+        setPriceObjExchange(result, 'gemini');
+        return bitfinex.fetchTicker(pair[0]);
+      })
+      .catch((err) => {
+        return bitfinex.fetchTicker(pair[0]);
+      }),
+      bitstamp.fetchTicker(pair[0]).then(result => {
+        setPriceObjExchange(result, 'bitfinex');
+      })
+      .catch(() => {
+        // swallow exception
+      })
+    ];
+
+    Promise.all(promises).then(res => {
+      let totalPrice = 0.0;
+      let rejects = 0;
 
       try {
         if (Object.keys(thisPriceObj[pair[0]]).length > 0) {
           while ((thisPriceObj[pair[0]].avgPrice == null) || (thisPriceObj[pair[0]].avgPrice == undefined)) {
             for (const obj in thisPriceObj[pair[0]]) {
-              if (!isNaN(thisPriceObj[pair[0]][obj])) {
-                totalPrice += thisPriceObj[pair[0]][obj];
-              } else {
-                rejects++;
+              if (thisPriceObj[pair[0]].hasOwnProperty(obj)) {
+                if (!isNaN(thisPriceObj[pair[0]][obj])) {
+                  totalPrice += thisPriceObj[pair[0]][obj];
+                } else {
+                  rejects++;
+                }
               }
             }
-
 
             thisPriceObj[pair[0]].avgPrice = precisionRound((totalPrice / (Object.keys(thisPriceObj[pair[0]]).length - rejects)), 2);
             thisPriceObj[pair[0]].date = new Date();
           }
-        }
-        else {
+        } else {
           delete thisPriceObj[pair[0]];
         }
-      }
-      catch (err) {
+      } catch (err) {
         // swallow exception
+        //should still reject an err to avoid unhandled rejections; the calling function can then choose to ignore the error. 
+        //Alternativly, you could resolve null if you dont want to hit the calling function's catch block
+        reject(err);
       }
-
       if (pair.length > 1) {
-        pair.splice(0,1);
-        return updatePrice(pair, excludedExchanges);
+        pair.splice(0, 1);
+        resolve(updatePrice(pair, excludedExchanges));
+      } else {
+        resolve(thisPriceObj);
       }
-      else {
-        return thisPriceObj;
-      }
-    }));
+    }).catch(err => {
+      reject(err);
+    });
   });
 }
 
-module.exports.priceObj = thisPriceObj;
-
-module.exports.updatePrice = updatePrice;
+module.exports = {
+  priceObj: thisPriceObj,
+  updatePrice: updatePrice
+}
