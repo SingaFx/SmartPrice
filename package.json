@@ -1,6 +1,6 @@
 {
   "name": "smartprice",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Aggregate cryptocurrency pricing using CCXT library and various exchanges",
   "main": "index.js",
   "scripts": {
