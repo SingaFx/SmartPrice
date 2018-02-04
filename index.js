@@ -5,6 +5,11 @@ let bitstamp = new ccxt.bitstamp();
 let gdax = new ccxt.gdax();
 let gemini = new ccxt.gemini();
 let bitfinex = new ccxt.bitfinex();
+let binance = new ccxt.binance();
+let dsx = new ccxt.dsx();
+let huobipro = new ccxt.huobipro();
+let cexio = new ccxt.cex();
+let poloniex = new ccxt.poloniex();
 
 let thisPriceObj = {};
 
@@ -36,7 +41,7 @@ function updatePrice(pair, excludedExchanges) {
     let hashTable = {};
     if ((excludedExchanges != null) && (excludedExchanges != undefined)) {
       excludedExchanges.forEach(e => {
-        hashTable[e] = true;
+        hashTable[e.toLowerCase()] = true;
       });
     }
 
@@ -91,6 +96,46 @@ function updatePrice(pair, excludedExchanges) {
         })
         .catch(() => {
           // swallow exception
+        }),
+      binance
+        .fetchTicker(pair[0])
+        .then(result => {
+          setPriceObjExchange(result, 'binance');
+        })
+        .catch(() => {
+          // swallow exception
+        }),
+      dsx
+        .fetchTicker(pair[0])
+        .then(result => {
+          setPriceObjExchange(result, 'dsx');
+        })
+        .catch(() => {
+          // swallow exception
+        }),
+      huobipro
+        .fetchTicker(pair[0])
+        .then(result => {
+          setPriceObjExchange(result, 'huobipro');
+        })
+        .catch(() => {
+          // swallow exception
+        }),
+      cexio
+        .fetchTicker(pair[0])
+        .then(result => {
+          setPriceObjExchange(result, 'cexio');
+        })
+        .catch(() => {
+          // swallow exception
+        }),
+      poloniex
+        .fetchTicker(pair[0])
+        .then(result => {
+          setPriceObjExchange(result, 'poloniex');
+        })
+        .catch(() => {
+          // swallow exception
         })
     ];
 
@@ -113,7 +158,8 @@ function updatePrice(pair, excludedExchanges) {
                 }
               }
 
-              thisPriceObj[pair[0]].avgPrice = precisionRound((totalPrice / (Object.keys(thisPriceObj[pair[0]]).length - rejects)), 2);
+              thisPriceObj[pair[0]].avgPrice = precisionRound((totalPrice / (Object.keys(thisPriceObj[pair[0]]).length - rejects)), 2); // average price rounded to two decimal places (ideal for fiat pairs)
+              thisPriceObj[pair[0]].avgPricePrecise = precisionRound((totalPrice / ((Object.keys(thisPriceObj[pair[0]]).length - 1) - rejects)), 8); // average price rounded to eight decimal places (common precision amongst cryptos)
               thisPriceObj[pair[0]].date = new Date();
             }
           } else {

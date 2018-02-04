@@ -1,8 +1,8 @@
 # SmartPrice
-Aggregate price return from specified exchanges for smart contract cryptocurrencies
+Average/aggregate price return from specified exchanges for smart contract cryptocurrencies
 
 # About
-Uses the [CCXT](https://github.com/ccxt/ccxt) library to simplify API calls. Uses the average ticker price from each Exchange if available, otherwise uses average of last ask and last bid.
+Uses the [CCXT](https://github.com/ccxt/ccxt) library to simplify API calls. Uses the average ticker price from each exchange if available, otherwise uses average of last ask and last bid.
 
 # Installation/Usage
 
@@ -24,12 +24,13 @@ sp.updatePrice(['ETH/USD'], ['kraken']).then(result => {
 
 /* Example Output:
 { 'ETH/USD':
-  { bitstamp: 1177.545,
-    gdax: 1139.9850000000001,
-    gemini: 1153.875,
-    bitfinex: 1192.05,
-    avgPrice: 1165.86,
-    date: 2018-01-28T06:46:55.784Z
+  { bitstamp: 1147.6399999999999,
+    gemini: 1145.175,
+    dsx: 1098.901098901099,
+    bitfinex: 1156.7,
+    avgPrice: 1138.3, // average price rounded to two decimal places (ideal for fiat pairs)
+    avgPricePrecise: 1138.30021978, // average price rounded to eight decimal places (common precision amongst cryptos)
+    date: 2018-02-01T05:38:42.103Z
   }
 }
 */
@@ -39,7 +40,4 @@ priceObj can be read repeatedly without out consequence, but calling updatePrice
 
 # Currently supported
 
-Currently only looks up price of Ethereum using Bitstamp, Kraken, Bitfinex, GDAX and Gemini exchanges as price sources.
-
-# Coming Soon
-Support for more exchanges.
+Currently only looks up crypto pairs using Bitstamp, Kraken, Bitfinex, GDAX, Gemini, Binance, DSX, HuobiPro, CEX.IO, and Poloniex exchanges as price sources.
