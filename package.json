@@ -27,6 +27,6 @@
   "author": "SmartConEx",
   "license": "ISC",
   "dependencies": {
-    "ccxt": "^1.10.579"
+    "ccxt": "^1.10.987"
   }
 }
