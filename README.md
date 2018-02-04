@@ -12,7 +12,7 @@ smartprice can be cloned and ran from the source, or can be installed as an npm 
 npm install smartprice --save
 ```
 
-Require and use smartprice in your project. There is currently only one method and one property right now. Typical usage would be to call the `updatePrice` function, which takes two parameters and returns an ES6 Promise. The two parameters are an array of currency pairs to update, and an optional array of exchanges to exclude. Ex:
+Require and use smartprice in your project. There is currently only one method and one property right now. Typical usage would be to call the `updatePrice` function, which takes two parameters and returns an ES6 Promise. The two parameters are an array of currency pairs to update, and an optional array of exchanges to exclude. After the updatePrice function has been executed, the result of the resolved promise can be read, or the priceObj can be read directly. Ex:
 
 ```javascript
 const sp = require('smartprice');
@@ -22,7 +22,9 @@ sp.updatePrice(['ETH/USD'], ['kraken']).then(result => {
   console.log(result);
 });
 
-/* Example Output:
+console.log(sp.priceObj);
+
+/* Example priceObj result:
 { 'ETH/USD':
   { bitstamp: 1147.6399999999999,
     gemini: 1145.175,
