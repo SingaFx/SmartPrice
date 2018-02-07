@@ -18,7 +18,19 @@
     "crypto",
     "bitcoin",
     "price",
-    "average"
+    "average",
+    "bitstamp",
+    "kraken",
+    "bitfinex",
+    "gdax",
+    "gemini",
+    "binance",
+    "dsx",
+    "huobi",
+    "huobipro",
+    "cexio",
+    "cex.io",
+    "poloniex"
   ],
   "repository": {
     "type": "git",
